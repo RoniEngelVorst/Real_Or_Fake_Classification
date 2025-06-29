@@ -1,41 +1,18 @@
-import os
-from Pillow import Image
 import numpy as np
-from sklearn.model_selection import train_test_split
+from sklearn.decomposition import PCA
+from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import StandardScaler
+from perceptron import run_perceptron
+from svm import run_svm
+from decision_tree import run_decision_tree
+from CNN_Model import run_cnn
 from skimage.feature import hog
 from skimage.color import rgb2gray
-
-
-def load_images_from_folder(folder_path, label, image_size=(128, 128)):
-    images = []
-    labels = []
-    for filename in os.listdir(folder_path):
-        file_path = os.path.join(folder_path, filename)
-        try:
-            img = Image.open(file_path).convert("RGB")
-            img = img.resize(image_size)
-            images.append(np.array(img))
-            labels.append(label)
-        except Exception as e:
-            print(f"Failed to load {file_path}: {e}")
-    return images, labels
-
-
-def load_dataset(base_path="data"):
-    train_fake, y_fake = load_images_from_folder(os.path.join(base_path, "train/Fake"), 0)
-    train_real, y_real = load_images_from_folder(os.path.join(base_path, "train/Genuine"), 1)
-    test_fake, y_test_fake = load_images_from_folder(os.path.join(base_path, "test/Fake"), 0)
-    test_real, y_test_real = load_images_from_folder(os.path.join(base_path, "test/Genuine"), 1)
-
-    X_train = np.array(train_fake + train_real)
-    y_train = np.array(y_fake + y_real)
-    X_test = np.array(test_fake + test_real)
-    y_test = np.array(y_test_fake + y_test_real)
-
-    return X_train, y_train, X_test, y_test
+from data_loader import load_logo_dataset
 
 
 def extract_hog_features(images):
+    """Extracts HOG features from a list of images."""
     features = []
     for img in images:
         gray = rgb2gray(img)
@@ -45,10 +22,36 @@ def extract_hog_features(images):
 
 
 if __name__ == "__main__":
-    X_train, y_train, X_test, y_test = load_dataset()
-    print(f"Loaded {len(X_train)} training images and {len(X_test)} testing images")
+    # === Load dataset from CSV and image folders ===
+    print("Loading dataset from file_mapping.csv...")
+    X_train_raw, X_test_raw, y_train, y_test = load_logo_dataset(base_dir="data")
 
+    # === Extract HOG features ===
     print("Extracting HOG features...")
-    X_train_hog = extract_hog_features(X_train)
-    X_test_hog = extract_hog_features(X_test)
-    print("Feature extraction completed.")
+    X_train_hog = extract_hog_features(X_train_raw)
+    X_test_hog = extract_hog_features(X_test_raw)
+
+    # === Normalize features ===
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train_hog)
+    X_test_scaled = scaler.transform(X_test_hog)
+
+    # === Run classical models without PCA ===
+    print("\n--- Without PCA ---")
+    run_perceptron(X_train_scaled, y_train, X_test_scaled, y_test)
+    run_svm(X_train_scaled, y_train, X_test_scaled, y_test)
+    run_decision_tree(X_train_scaled, y_train, X_test_scaled, y_test)
+
+    # === Apply PCA ===
+    print("\n--- With PCA (100 components) ---")
+    pca = PCA(n_components=100)
+    X_train_pca = pca.fit_transform(X_train_scaled)
+    X_test_pca = pca.transform(X_test_scaled)
+
+    run_perceptron(X_train_pca, y_train, X_test_pca, y_test)
+    run_svm(X_train_pca, y_train, X_test_pca, y_test)
+    run_decision_tree(X_train_pca, y_train, X_test_pca, y_test)
+
+    # === Run CNN if needed ===
+    # print("\n--- CNN ---")
+    # run_cnn(X_train_raw, y_train, X_test_raw, y_test)
