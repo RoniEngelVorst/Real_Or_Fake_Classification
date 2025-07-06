@@ -23,3 +23,4 @@ def run_perceptron(X_train, y_train, X_test, y_test):
     print("Best parameters:", grid.best_params_)
     print("Accuracy:", acc)
     print(classification_report(y_test, y_pred))
+    return y_pred

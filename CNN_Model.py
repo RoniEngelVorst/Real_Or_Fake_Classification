@@ -5,6 +5,31 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
+from sklearn.decomposition import PCA
+from skimage.color import rgb2gray
+
+
+def plot_cnn_predictions_2D(X_images, y_true, y_pred, title="CNN – Predictions in 2D (via PCA)"):
+    X_flat = []
+    for img in X_images:
+        gray = rgb2gray(img)
+        X_flat.append(gray.flatten())
+    X_flat = np.array(X_flat)
+
+    pca = PCA(n_components=2)
+    X_vis = pca.fit_transform(X_flat)
+
+    correct = y_true == y_pred.flatten()
+    plt.figure(figsize=(8, 6))
+    plt.scatter(X_vis[correct, 0], X_vis[correct, 1], c='green', label='Correct', alpha=0.6)
+    plt.scatter(X_vis[~correct, 0], X_vis[~correct, 1], c='red', label='Incorrect', alpha=0.6)
+    plt.title(title)
+    plt.xlabel("PCA Component 1")
+    plt.ylabel("PCA Component 2")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
 
 def build_cnn(input_shape):
     model = models.Sequential([
@@ -104,3 +129,6 @@ def run_cnn(X_train, y_train, X_test, y_test, runs=3):
     plt.legend()
     plt.tight_layout()
     plt.show()
+
+    # Call visualization for the final predictions of last run
+    plot_cnn_predictions_2D(X_test, y_test, y_pred)
