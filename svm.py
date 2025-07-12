@@ -1,8 +1,6 @@
-import numpy as np
 from sklearn.svm import SVC
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import accuracy_score, classification_report
-from sklearn.decomposition import PCA
 
 
 def run_svm(X_train, y_train, X_test, y_test):

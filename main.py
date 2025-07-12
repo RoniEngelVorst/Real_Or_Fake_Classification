@@ -14,17 +14,7 @@ import matplotlib.pyplot as plt
 
 
 def plot_predictions_2D(X_high_dim, y_true, y_preds_dict):
-    """
-    Projects high-dimensional data to 2D using PCA, and plots predictions for multiple models.
-
-    Parameters:
-        X_high_dim: ndarray
-            The original high-dimensional feature matrix (e.g., X_test_scaled).
-        y_true: ndarray
-            True labels.
-        y_preds_dict: dict
-            A dictionary where keys are model names (str) and values are predicted labels (ndarray).
-    """
+    """ Projects high-dimensional data to 2D using PCA, and plots predictions for multiple models. """
     # Project data to 2D using PCA
     pca = PCA(n_components=2)
     X_vis = pca.fit_transform(X_high_dim)
@@ -81,11 +71,12 @@ if __name__ == "__main__":
     X_train_pca = pca.fit_transform(X_train_scaled)
     X_test_pca = pca.transform(X_test_scaled)
 
+    # === Run again using PCA ===
     run_perceptron(X_train_pca, y_train, X_test_pca, y_test)
     run_svm(X_train_pca, y_train, X_test_pca, y_test)
     run_decision_tree(X_train_pca, y_train, X_test_pca, y_test)
 
-    # === Run CNN if needed ===
+    # === Run CNN ===
     print("\n--- CNN ---")
     run_cnn(X_train_raw, y_train, X_test_raw, y_test)
 

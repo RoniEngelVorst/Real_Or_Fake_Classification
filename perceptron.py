@@ -1,8 +1,6 @@
-import numpy as np
 from sklearn.linear_model import Perceptron
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import accuracy_score, classification_report
-from sklearn.decomposition import PCA
 
 
 def run_perceptron(X_train, y_train, X_test, y_test):
